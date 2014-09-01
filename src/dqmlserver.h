@@ -24,6 +24,55 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "global.h"
+#ifndef DQMLSERVER_H
+#define DQMLSERVER_H
 
-Q_LOGGING_CATEGORY(MORTALQML, "mortalqml")
+#include "dqmlglobal.h"
+
+#include <QObject>
+#include <QAbstractSocket>
+
+class QTcpSocket;
+class QTcpServer;
+class QQmlEngine;
+class QQuickView;
+
+class DQmlServer : public QObject
+{
+    Q_OBJECT
+public:
+    DQmlServer(QQmlEngine *engine, QQuickView *view, const QString &file);
+
+    void setCreateViewIfNeeded(bool createView) { m_createViewIfNeeded = createView; }
+    bool createsViewIfNeeded() const { return m_createViewIfNeeded; }
+
+    void addTrackerMapping(const QString &id, const QString &path) { m_trackerMapping.insert(id, path); }
+
+public slots:
+    void listen(quint16 port);
+    void reloadQml();
+
+private slots:
+    void newConnection();
+    void acceptError(QAbstractSocket::SocketError error);
+
+    void read();
+
+private:
+    QString m_file;
+
+    QQmlEngine *m_engine;
+    QQuickView *m_view;
+    QObject *m_contentItem;
+
+    bool m_createViewIfNeeded;
+    bool m_ownsView;
+
+    QTcpServer *m_tcpServer;
+    QTcpSocket *m_clientSocket;
+
+    QHash<QString, QString> m_trackerMapping;
+};
+
+
+#endif // DQMLSERVER_H

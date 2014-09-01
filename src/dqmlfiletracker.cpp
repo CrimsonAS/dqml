@@ -24,9 +24,9 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "filetracker.h"
+#include "dqmlfiletracker.h"
 
-FileTracker::FileTracker(QObject *parent) :
+DQmlFileTracker::DQmlFileTracker(QObject *parent) :
     QObject(parent)
 {
     connect(&m_watcher, SIGNAL(directoryChanged(QString)), this, SLOT(onDirChange(QString)));
@@ -39,42 +39,42 @@ FileTracker::FileTracker(QObject *parent) :
     m_suffixes << QStringLiteral("gif");
 }
 
-bool FileTracker::track(const QString &id, const QString &path)
+bool DQmlFileTracker::track(const QString &id, const QString &path)
 {
     QFileInfo i(path);
     if (!i.exists()) {
-        qCDebug(MORTALQML) << "path does not exist" << path;
+        qCDebug(DQML_LOG) << "path does not exist" << path;
         return false;
     }
     if (!i.isDir()) {
-        qCDebug(MORTALQML) << "path is not a directory" << path;
+        qCDebug(DQML_LOG) << "path is not a directory" << path;
         return false;
     }
     QString cp = i.canonicalFilePath();
     m_set[id] = createEntry(i);
     m_watcher.addPath(cp);
-    qCDebug(MORTALQML) << "tracking" << id << cp;
+    qCDebug(DQML_LOG) << "tracking" << id << cp;
     return true;
 }
 
-bool FileTracker::untrack(const QString &id)
+bool DQmlFileTracker::untrack(const QString &id)
 {
-    qCDebug(MORTALQML) << "untracking" << id;
+    qCDebug(DQML_LOG) << "untracking" << id;
     if (m_set.contains(id)) {
         QString path = m_set.take(id).path;
         m_watcher.removePath(path);
         return true;
     }
-    qCWarning(MORTALQML) << "unknown id";
+    qCWarning(DQML_LOG) << "unknown id";
     return false;
 }
 
-QHash<QString, FileTracker::Entry> FileTracker::trackingSet() const
+QHash<QString, DQmlFileTracker::Entry> DQmlFileTracker::trackingSet() const
 {
     return m_set;
 }
 
-QString FileTracker::idFromPath(const QString &path) const
+QString DQmlFileTracker::idFromPath(const QString &path) const
 {
     for (QHash<QString, Entry>::const_iterator it = m_set.constBegin();
          it != m_set.constEnd(); ++it) {
@@ -84,13 +84,13 @@ QString FileTracker::idFromPath(const QString &path) const
     return QString();
 }
 
-void FileTracker::onDirChange(const QString &path)
+void DQmlFileTracker::onDirChange(const QString &path)
 {
-    qCDebug(MORTALQML) << "change in directory" << path;
+    qCDebug(DQML_LOG) << "change in directory" << path;
     QString id = idFromPath(path);
     if (id.isEmpty()) {
         untrack(id);
-        qCDebug(MORTALQML) << " - no entry, cancel tracking...";
+        qCDebug(DQML_LOG) << " - no entry, cancel tracking...";
         return;
     }
 
@@ -116,17 +116,17 @@ void FileTracker::onDirChange(const QString &path)
             // If file was there before and is still there, check match the last modified
             // timestamp and emit fileChange if it has been modified..
             if (currentContent.value(p) > entry.content.value(p)) {
-                qCDebug(MORTALQML) << " - changed:" << id << p;
-                emit fileChanged(id, p);
+                qCDebug(DQML_LOG) << " - changed:" << id << p;
+                emit fileChanged(id, path, p);
             }
         } else if (is) {
             // File is there now, but wasn't before -> added..
-            qCDebug(MORTALQML) << " - added:" << id << p;
-            emit fileAdded(id, p);
+            qCDebug(DQML_LOG) << " - added:" << id << p;
+            emit fileAdded(id, path, p);
         } else if (was) {
             // file was there, but isn't anymore -> removed
-            qCDebug(MORTALQML) << " - removed:" << id << p;
-            emit fileRemoved(id, p);
+            qCDebug(DQML_LOG) << " - removed:" << id << p;
+            emit fileRemoved(id, path, p);
         }
     }
 
@@ -134,7 +134,7 @@ void FileTracker::onDirChange(const QString &path)
     entry.content = currentContent;
 }
 
-FileTracker::Entry FileTracker::createEntry(const QFileInfo &info)
+DQmlFileTracker::Entry DQmlFileTracker::createEntry(const QFileInfo &info)
 {
     Entry e;
     e.path = info.canonicalFilePath();
@@ -147,10 +147,10 @@ FileTracker::Entry FileTracker::createEntry(const QFileInfo &info)
         if (i.isFile() && m_suffixes.contains(i.suffix().toLower())) {
             QString name = i.fileName();
             quint64 time = i.lastModified().toMSecsSinceEpoch();
-            qCDebug(MORTALQML) << " - tracking file" << name << time;
+            qCDebug(DQML_LOG) << " - tracking file" << name << time;
             e.content[name] = time;
         } else {
-            qCDebug(MORTALQML) << " - ignoring" << i.fileName();
+            qCDebug(DQML_LOG) << " - ignoring" << i.fileName();
         }
     }
     return e;

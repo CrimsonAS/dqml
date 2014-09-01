@@ -1,16 +1,18 @@
-TEMPLATE    = app
-TARGET      = mortalqmlmonitor
-DESTDIR     = ../bin
+TEMPLATE    = lib
+TARGET      = dqmlmonitor
+DESTDIR     = ../lib
 
 QT          = core network
 
 CONFIG      -= app_bundle
+CONFIG      += static
 
 SOURCES += \ 
-     	filetracker.cpp \
-        global.cpp \
-        monitormain.cpp \
+        dqmlfiletracker.cpp \
+        dqmlglobal.cpp \
+        dqmlmonitor.cpp \
 
 HEADERS += \
-    filetracker.h \
-    global.h
+        dqmlfiletracker.h \
+        dqmlglobal.h \
+        dqmlmonitor.h \

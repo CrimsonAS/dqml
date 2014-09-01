@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS  = monitor.pro
+CONFIG += ordered
+SUBDIRS  = monitor.pro server.pro dqml.pro
 

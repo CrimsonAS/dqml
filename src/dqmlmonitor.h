@@ -24,46 +24,55 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef FILETRACKER_H
-#define FILETRACKER_H
+#ifndef DQMLMONITOR_H
+#define DQMLMONITOR_H
 
-#include <QtCore>
+#include <QObject>
+#include <QAbstractSocket>
 
-#include "global.h"
+class DQmlFileTracker;
 
-class FileTracker : public QObject
+class QTcpSocket;
+
+
+class DQmlMonitor: public QObject
 {
     Q_OBJECT
 public:
+    DQmlMonitor();
+    ~DQmlMonitor();
 
-    struct Entry {
-        QString path;
-        QHash<QString, quint64> content;
-    };
+    DQmlFileTracker *fileTracker() { return m_tracker; }
 
-    explicit FileTracker(QObject *parent = 0);
-
-    QHash<QString, Entry> trackingSet() const;
-
-    bool track(const QString &id, const QString &path);
-    bool untrack(const QString &id);
-
-signals:
-    void fileChanged(const QString &id, const QString &filePath);
-    void fileAdded(const QString &id, const QString &filePath);
-    void fileRemoved(const QString &id, const QString &filePath);
+public slots:
+    void connectToServer(const QString &host, quint16 port);
 
 private slots:
-    void onDirChange(const QString &);
+    void socketConnected();
+    void socketDisconnected();
+    void socketError(QAbstractSocket::SocketError error);
+
+    void fileWasChanged(const QString &id, const QString &path, const QString &file);
+    void fileWasAdded(const QString &id, const QString &path, const QString &file);
+    void fileWasRemoved(const QString &id, const QString &path, const QString &file);
+
+protected:
+    void timerEvent(QTimerEvent *e);
 
 private:
-    Entry createEntry(const QFileInfo &info);
-    QString idFromPath(const QString &path) const;
+    enum EventType { ChangeEvent = 1, AddEvent = 2, RemoveEvent = 3 };
+    void writeEvent(EventType type, const QString &id, const QString &path, const QString &file);
+    void maybeNoSocketSoTryLater();
 
-    QHash<QString, Entry> m_set;
-    QSet<QString> m_suffixes;
+    DQmlFileTracker *m_tracker;
 
-    QFileSystemWatcher m_watcher;
+    QTcpSocket *m_socket;
+    QString m_host;
+    quint16 m_port;
+    bool m_connected;
+    int m_connectTimer;
+
 };
 
-#endif // FILETRACKER_H
+
+#endif // DQMLMONITOR_H
