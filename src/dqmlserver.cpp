@@ -88,10 +88,26 @@ void DQmlServer::read()
     QString id, file, content;
     int type;
 
+    char *data = 0;
+    int dataLength = 0;
+
     stream >> type >> id >> file;
 
     if (type == 1 || type == 2) {
-        stream >> content;
+        stream >> dataLength;
+        data = (char *) malloc(dataLength);
+
+        char *d = data;
+
+        int bytesLeft = dataLength;
+        while (bytesLeft > 0) {
+            char chunk[1024];
+            int actual = stream.readRawData(chunk, qMin<int>(bytesLeft, sizeof(chunk)));
+            qCDebug(DQML_LOG) << " -> read a chunk..." << actual;
+            memcpy(d, chunk, actual);
+            bytesLeft -= actual;
+            d += actual;
+        }
     }
 
     if (!m_trackerMapping.contains(id)) {
@@ -106,8 +122,7 @@ void DQmlServer::read()
             qCDebug(DQML_LOG) << " -> failed to write" << QFileInfo(f).absoluteFilePath() << f.errorString();
             return;
         }
-        QTextStream ts(&f);
-        ts << content;
+        f.write(data, dataLength);
         qCDebug(DQML_LOG) << " -> updated" << id << ":" << file;
     } else if (type == 3) {
         QFile f(fileName);
@@ -141,7 +156,7 @@ void DQmlServer::reloadQml()
         return;
     }
 
-     m_contentItem = component->create();
+    m_contentItem = component->create();
     qCDebug(DQML_LOG) << "created" << m_contentItem;
     if (qobject_cast<QQuickWindow *>(m_contentItem)) {
         if (m_view && m_ownsView) {
@@ -150,20 +165,23 @@ void DQmlServer::reloadQml()
             m_ownsView = false;
         }
     } else {
+        QQuickItem *item = qobject_cast<QQuickItem *>(m_contentItem);
+        QSize size(320, 480);
+        if (item && item->width() > 0 && item->height() > 0)
+            size = QSize(item->width(), item->height());
         if (!m_view && m_createViewIfNeeded) {
             m_view = new QQuickView();
-            if (QQuickItem *item = qobject_cast<QQuickItem*>(m_contentItem))
-                m_view->resize(item->width(), item->height());
-            else
-                m_view->resize(320, 480);
             m_view->setResizeMode(QQuickView::SizeRootObjectToView);
             m_ownsView = true;
             qCDebug(DQML_LOG) << "created a view to hold the QML";
         }
         if (m_view) {
+
             m_view->setContent(fileUrl, component, m_contentItem);
-            if (m_ownsView)
+            if (m_ownsView) {
+                m_view->resize(size);
                 m_view->show();
+            }
         }
         else
             qCDebug(DQML_LOG) << "no view to show qml, set 'setCreatesViewIfNeeded(true)' or supply one.";
