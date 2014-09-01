@@ -69,14 +69,14 @@ void DQmlMonitor::connectToServer(const QString &host, quint16 port)
     m_socket->connectToHost(QHostAddress(host), port, QTcpSocket::WriteOnly);
 }
 
-QString fileContent(const QString &path)
+QByteArray fileContent(const QString &path)
 {
     QFile file(path);
     if (!file.open(QFile::ReadOnly)) {
         qWarning() << "failed to read file" << path;
-        return QString();
+        return QByteArray();
     }
-    return QString::fromLocal8Bit(file.readAll());
+    return file.readAll();
 }
 
 void DQmlMonitor::writeEvent(EventType type, const QString &id, const QString &path, const QString &file)
@@ -89,8 +89,11 @@ void DQmlMonitor::writeEvent(EventType type, const QString &id, const QString &p
         {
             QDataStream stream(m_socket);
             stream << type << id << file;
-            if (type != RemoveEvent)
-                stream << fileContent(path + "/" + file);
+            if (type != RemoveEvent) {
+                QByteArray content = fileContent(path + "/" + file);
+                stream << content.size();
+                stream.writeRawData(content.constData(), content.size());
+            }
         }
         m_socket->flush();
 
