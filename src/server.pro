@@ -13,6 +13,6 @@ SOURCES     += \
 
 HEADERS     += \
     dqmlglobal.h \
-    dqmllocalserver.cpp \
+    dqmllocalserver.h \
     dqmlserver.h \
 

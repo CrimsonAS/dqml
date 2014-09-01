@@ -6,12 +6,15 @@ CONFIG      -= app_bundle
 
 QT          += quick
 
-LIBS        += -L../lib -ldqmlmonitor -ldqmlserver
+LIBS        += -L../lib -ldqmlserver
    
 SOURCES     += \
-    dqmllocalserver.cpp \
+    dqmlfiletracker.cpp \
+    dqmlglobal.cpp \
     dqmlmain.cpp \
-
+    dqmlmonitor.cpp \
 
 HEADERS += \
-    dqmllocalserver.h \
+    dqmlfiletracker.h \
+    dqmlglobal.h \
+    dqmlmonitor.h \
