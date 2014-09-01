@@ -45,3 +45,15 @@ On the target machine:
 
  > dqml --server port --track qmlfiles /usr/share/myapp/qml --track /usr/share/myapp/images
 
+
+
+Limitations:
+
+ - Both the server and monitor operate on files, so QML files and images
+   inside qrc cannot be updated and worked on.
+
+ - The reevaulation of code in the server is 'dumb'. It clears the QQmlEngne's
+   component cache and reloads all files. The toplevel QML object is destroyed.
+   This means that any JS/QML state the application has built up by the time
+   the reevaluation happens, will be lost. C++ state should be fine, assuming
+   the C++ code can handle the JS/QML being recreated. 
