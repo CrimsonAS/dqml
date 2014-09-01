@@ -199,10 +199,14 @@ int main(int argc, char **argv)
         server->listen(port);
     }
 
+    QString current = QStringLiteral(".");
+    if (mode == Local_Mode || mode == Server_Mode)
+        current = QFileInfo(file).canonicalPath();
+
     if (mode == Local_Mode || mode == Monitor_Mode) {
         Q_ASSERT(tracker);
         if (tracking.size() == 0) {
-            tracker->track(QStringLiteral("current-directory"), QStringLiteral("."));
+            tracker->track(QStringLiteral("current-directory"), current);
         } else {
             for (int i=0; i<tracking.size(); ++i) {
                 const QPair<QString,QString> &pair = tracking.at(i);
@@ -212,7 +216,7 @@ int main(int argc, char **argv)
 
     } else { // Server_Mode
         if (tracking.size() == 0) {
-            server->addTrackerMapping(QStringLiteral("current-directory"), QStringLiteral("."));
+            server->addTrackerMapping(QStringLiteral("current-directory"), current);
         } else {
             for (int i=0; i<tracking.size(); ++i) {
                 const QPair<QString,QString> &pair = tracking.at(i);
