@@ -103,7 +103,6 @@ void DQmlServer::read()
         while (bytesLeft > 0) {
             char chunk[1024];
             int actual = stream.readRawData(chunk, qMin<int>(bytesLeft, sizeof(chunk)));
-            qCDebug(DQML_LOG) << " -> read a chunk..." << actual;
             memcpy(d, chunk, actual);
             bytesLeft -= actual;
             d += actual;
@@ -112,6 +111,7 @@ void DQmlServer::read()
 
     if (!m_trackerMapping.contains(id)) {
         qCDebug(DQML_LOG) << " -> got data for unknown id, aborting" << id;
+        qCDebug(DQML_LOG) << " --->" << m_trackerMapping.keys();
         return;
     }
     QString fileName = m_trackerMapping.value(id) + QStringLiteral("/") + file;
