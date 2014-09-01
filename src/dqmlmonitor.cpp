@@ -35,6 +35,7 @@ DQmlMonitor::DQmlMonitor()
     , m_port(0)
     , m_connected(false)
     , m_connectTimer(0)
+    , m_syncAll(false)
 {
     m_tracker = new DQmlFileTracker(this);
     connect(m_tracker, SIGNAL(fileAdded(QString,QString,QString)), this, SLOT(fileWasAdded(QString,QString,QString)));
@@ -127,6 +128,19 @@ void DQmlMonitor::socketConnected()
     if (m_connectTimer != 0) {
         killTimer(m_connectTimer);
         m_connectTimer = 0;
+    }
+    if (m_syncAll)
+        syncAllFiles();
+}
+
+void DQmlMonitor::syncAllFiles()
+{
+    QHash<QString, DQmlFileTracker::Entry> all = m_tracker->trackingSet();
+    for (QHash<QString, DQmlFileTracker::Entry>::const_iterator it = all.constBegin();
+         it != m_tracker->trackingSet().constEnd(); ++it) {
+        const DQmlFileTracker::Entry &e = it.value();
+        foreach (const QString &file, e.content.keys())
+            fileWasAdded(it.key(), it.value().path, file);
     }
 }
 

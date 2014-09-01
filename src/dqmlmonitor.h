@@ -43,9 +43,11 @@ public:
     ~DQmlMonitor();
 
     DQmlFileTracker *fileTracker() { return m_tracker; }
+    void setSyncAllFilesWhenConnected(bool sync) { m_syncAll = sync; }
 
 public slots:
     void connectToServer(const QString &host, quint16 port);
+    void syncAllFiles();
 
 private slots:
     void socketConnected();
@@ -71,6 +73,8 @@ private:
     quint16 m_port;
     bool m_connected;
     int m_connectTimer;
+
+    bool m_syncAll;
 
 };
 

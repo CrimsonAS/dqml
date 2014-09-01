@@ -46,7 +46,7 @@ void printHelp()
            " > dqml file.qml               (same as --local)\n"
            " > dqml --local [--track path] file.qml\n"
            " > dqml --server port [--track id path] file.qml\n"
-           " > dqml --monitor addr port [--track id path] \n"
+           " > dqml --monitor addr port [--track id path] [--sync]\n"
            "\n"
            "Application modes:\n"
            "    --local     The application runs locally and functions like qmlscene, except\n"
@@ -68,6 +68,8 @@ void printHelp()
            "                        monitor and server. The tracking is not recursive, but\n"
            "                        multiple --track arguments can be specified. When no\n"
            "                        arguments are specified, the current directory is tracked\n"
+           "    --sync              Sync all files from the monitor to the server when connected.\n"
+           "                        Useful to keep files in sync."
            "\n"
            );
 }
@@ -88,6 +90,7 @@ int main(int argc, char **argv)
     QString file;
     int port = -1;
     QString host;
+    bool sync = false;
 
     QStringList args = app.arguments();
     for (int i=1; i<args.size(); ++i) {
@@ -128,6 +131,9 @@ int main(int argc, char **argv)
 
         } else if (a == QStringLiteral("--local")) {
             mode = Local_Mode;
+
+        } else if (a == QStringLiteral("--sync")) {
+            sync = true;
 
         } else if (a == QStringLiteral("--track")) {
             if (mode == Local_Mode) {
@@ -182,6 +188,7 @@ int main(int argc, char **argv)
     } else if (mode == Monitor_Mode) {
         monitor.reset(new DQmlMonitor());
         tracker = monitor->fileTracker();
+        monitor->setSyncAllFilesWhenConnected(sync);
         monitor->connectToServer(host, port);
 
     } else if (mode == Server_Mode) {
@@ -195,7 +202,7 @@ int main(int argc, char **argv)
     if (mode == Local_Mode || mode == Monitor_Mode) {
         Q_ASSERT(tracker);
         if (tracking.size() == 0) {
-            tracker->track(".", ".");
+            tracker->track(QStringLiteral("current-directory"), QStringLiteral("."));
         } else {
             for (int i=0; i<tracking.size(); ++i) {
                 const QPair<QString,QString> &pair = tracking.at(i);
@@ -205,7 +212,7 @@ int main(int argc, char **argv)
 
     } else { // Server_Mode
         if (tracking.size() == 0) {
-            server->addTrackerMapping(QStringLiteral("."), QStringLiteral("."));
+            server->addTrackerMapping(QStringLiteral("current-directory"), QStringLiteral("."));
         } else {
             for (int i=0; i<tracking.size(); ++i) {
                 const QPair<QString,QString> &pair = tracking.at(i);

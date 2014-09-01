@@ -51,9 +51,9 @@ bool DQmlFileTracker::track(const QString &id, const QString &path)
         return false;
     }
     QString cp = i.canonicalFilePath();
+    qCDebug(DQML_LOG) << "tracking" << id << cp;
     m_set[id] = createEntry(i);
     m_watcher.addPath(cp);
-    qCDebug(DQML_LOG) << "tracking" << id << cp;
     return true;
 }
 
