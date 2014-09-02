@@ -35,10 +35,13 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-#include "dqmlserver.h"
-#include "dqmllocalserver.h"
-#include "dqmlmonitor.h"
-#include "dqmlfiletracker.h"
+#include <QFileInfo>
+#include <QFileSystemWatcher>
+
+#include <dqml/dqmlserver.h>
+#include <dqml/dqmllocalserver.h>
+#include <dqml/dqmlmonitor.h>
+#include <dqml/dqmlfiletracker.h>
 
 void printHelp()
 {
@@ -178,7 +181,7 @@ int main(int argc, char **argv)
 
         QGuiApplication::setQuitOnLastWindowClosed(false);
 
-        qCDebug(DQML_LOG) << "running in local mode with" << file;
+        qDebug() << "running in local mode with" << file;
         engine.reset(new QQmlEngine());
         localServer.reset(new DQmlLocalServer(engine.data(), 0, file));
         localServer->setCreateViewIfNeeded(true);
@@ -186,12 +189,14 @@ int main(int argc, char **argv)
         tracker = localServer->fileTracker();
 
     } else if (mode == Monitor_Mode) {
+        qDebug() << "running monitor mode";
         monitor.reset(new DQmlMonitor());
         tracker = monitor->fileTracker();
         monitor->setSyncAllFilesWhenConnected(sync);
         monitor->connectToServer(host, port);
 
     } else if (mode == Server_Mode) {
+        qDebug() << "running server mode with" << file;
         engine.reset(new QQmlEngine());
         server.reset(new DQmlServer(engine.data(), 0, file));
         server->setCreateViewIfNeeded(true);

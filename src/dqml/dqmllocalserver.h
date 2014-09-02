@@ -27,10 +27,13 @@
 #ifndef DQMLLOCALSERVER_H
 #define DQMLLOCALSERVER_H
 
-#include "dqmlfiletracker.h"
-#include "dqmlserver.h"
+#include <dqml/dqmlglobal.h>
+#include <dqml/dqmlfiletracker.h>
+#include <dqml/dqmlserver.h>
 
-class DQmlLocalServer : public DQmlServer
+QT_BEGIN_NAMESPACE
+
+class DQML_EXPORT DQmlLocalServer : public DQmlServer
 {
     Q_OBJECT
 public:
@@ -42,5 +45,7 @@ private:
     DQmlFileTracker m_tracker;
 
 };
+
+QT_END_NAMESPACE
 
 #endif // DQMLLOCALSERVER_H

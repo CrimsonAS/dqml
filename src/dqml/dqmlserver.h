@@ -24,59 +24,59 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef DQMLMONITOR_H
-#define DQMLMONITOR_H
+#ifndef DQMLSERVER_H
+#define DQMLSERVER_H
 
-#include <QObject>
-#include <QAbstractSocket>
+#include <dqml/dqmlglobal.h>
 
-class DQmlFileTracker;
+#include <QtCore/QObject>
+
+#include <QtNetwork/QAbstractSocket>
+
+QT_BEGIN_NAMESPACE
 
 class QTcpSocket;
+class QTcpServer;
+class QQmlEngine;
+class QQuickView;
 
-
-class DQmlMonitor: public QObject
+class DQML_EXPORT DQmlServer : public QObject
 {
     Q_OBJECT
 public:
-    DQmlMonitor();
-    ~DQmlMonitor();
+    DQmlServer(QQmlEngine *engine, QQuickView *view, const QString &file);
 
-    DQmlFileTracker *fileTracker() { return m_tracker; }
-    void setSyncAllFilesWhenConnected(bool sync) { m_syncAll = sync; }
+    void setCreateViewIfNeeded(bool createView) { m_createViewIfNeeded = createView; }
+    bool createsViewIfNeeded() const { return m_createViewIfNeeded; }
+
+    void addTrackerMapping(const QString &id, const QString &path) { m_trackerMapping.insert(id, path); }
 
 public slots:
-    void connectToServer(const QString &host, quint16 port);
-    void syncAllFiles();
+    void listen(quint16 port);
+    void reloadQml();
 
 private slots:
-    void socketConnected();
-    void socketDisconnected();
-    void socketError(QAbstractSocket::SocketError error);
+    void newConnection();
+    void acceptError(QAbstractSocket::SocketError error);
 
-    void fileWasChanged(const QString &id, const QString &path, const QString &file);
-    void fileWasAdded(const QString &id, const QString &path, const QString &file);
-    void fileWasRemoved(const QString &id, const QString &path, const QString &file);
-
-protected:
-    void timerEvent(QTimerEvent *e);
+    void read();
 
 private:
-    enum EventType { ChangeEvent = 1, AddEvent = 2, RemoveEvent = 3 };
-    void writeEvent(EventType type, const QString &id, const QString &path, const QString &file);
-    void maybeNoSocketSoTryLater();
+    QString m_file;
 
-    DQmlFileTracker *m_tracker;
+    QQmlEngine *m_engine;
+    QQuickView *m_view;
+    QObject *m_contentItem;
 
-    QTcpSocket *m_socket;
-    QString m_host;
-    quint16 m_port;
-    bool m_connected;
-    int m_connectTimer;
+    bool m_createViewIfNeeded;
+    bool m_ownsView;
 
-    bool m_syncAll;
+    QTcpServer *m_tcpServer;
+    QTcpSocket *m_clientSocket;
 
+    QHash<QString, QString> m_trackerMapping;
 };
 
+QT_END_NAMESPACE
 
-#endif // DQMLMONITOR_H
+#endif // DQMLSERVER_H

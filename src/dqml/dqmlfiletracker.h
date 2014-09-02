@@ -27,11 +27,15 @@
 #ifndef DQMLFILETRACKER_H
 #define DQMLFILETRACKER_H
 
-#include <QtCore>
+#include <dqml/dqmlglobal.h>
 
-#include "dqmlglobal.h"
+#include <QtCore/QObject>
+#include <QtCore/QHash>
+#include <QtCore/QSet>
 
-class DQmlFileTracker : public QObject
+QT_BEGIN_NAMESPACE
+
+class DQML_EXPORT DQmlFileTracker : public QObject
 {
     Q_OBJECT
 public:
@@ -64,5 +68,7 @@ private:
 
     QFileSystemWatcher m_watcher;
 };
+
+QT_END_NAMESPACE
 
 #endif // DQMLFILETRACKER_H

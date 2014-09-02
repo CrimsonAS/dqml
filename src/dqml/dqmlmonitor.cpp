@@ -91,7 +91,7 @@ void DQmlMonitor::writeEvent(EventType type, const QString &id, const QString &p
             QDataStream stream(m_socket);
             stream << type << id << file;
             if (type != RemoveEvent) {
-                QByteArray content = fileContent(path + "/" + file);
+                QByteArray content = fileContent(path + QStringLiteral("/") + file);
                 stream << content.size();
                 stream.writeRawData(content.constData(), content.size());
             }

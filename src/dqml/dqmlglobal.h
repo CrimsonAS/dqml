@@ -29,6 +29,16 @@
 
 #include <QLoggingCategory>
 
+#ifdef DQML_BUILD_LIB
 Q_DECLARE_LOGGING_CATEGORY(DQML_LOG)
+#  define DQML_EXPORT Q_DECL_EXPORT
+#else
+#  define DQML_EXPORT Q_DECL_IMPORT
+#endif
+
+QT_BEGIN_NAMESPACE
+
+
+QT_END_NAMESPACE
 
 #endif // DQMLGLOBAL_H
