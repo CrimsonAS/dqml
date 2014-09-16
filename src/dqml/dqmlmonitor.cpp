@@ -27,8 +27,10 @@
 #include "dqmlmonitor.h"
 #include "dqmlfiletracker.h"
 
-#include <QHostAddress>
-#include <QTcpSocket>
+#include <QtCore/QTimerEvent>
+
+#include <QtNetwork/QHostAddress>
+#include <QtNetwork/QTcpSocket>
 
 DQmlMonitor::DQmlMonitor()
     : m_socket(0)

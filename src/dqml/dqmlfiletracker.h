@@ -32,6 +32,8 @@
 #include <QtCore/QObject>
 #include <QtCore/QHash>
 #include <QtCore/QSet>
+#include <QtCore/QFileInfo>
+#include <QtCore/QFileSystemWatcher>
 
 QT_BEGIN_NAMESPACE
 

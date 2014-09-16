@@ -26,6 +26,10 @@
 
 #include "dqmlfiletracker.h"
 
+#include <QtCore/QDir>
+#include <QtCore/QDirIterator>
+#include <QtCore/QDateTime>
+
 DQmlFileTracker::DQmlFileTracker(QObject *parent) :
     QObject(parent)
 {
