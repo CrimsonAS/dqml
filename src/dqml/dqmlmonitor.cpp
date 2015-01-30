@@ -28,6 +28,7 @@
 #include "dqmlfiletracker.h"
 
 #include <QtCore/QTimerEvent>
+#include <QtCore/QDataStream>
 
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QTcpSocket>

@@ -70,6 +70,7 @@ private:
 
     bool m_createViewIfNeeded;
     bool m_ownsView;
+    bool m_pendingReload;
 
     QTcpServer *m_tcpServer;
     QTcpSocket *m_clientSocket;

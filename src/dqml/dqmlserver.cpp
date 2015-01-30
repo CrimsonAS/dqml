@@ -44,6 +44,7 @@ DQmlServer::DQmlServer(QQmlEngine *engine, QQuickView *view, const QString &file
     , m_contentItem(0)
     , m_createViewIfNeeded(false)
     , m_ownsView(false)
+    , m_pendingReload(false)
     , m_tcpServer(0)
     , m_clientSocket(0)
 {
@@ -136,12 +137,15 @@ void DQmlServer::read()
     // More commands in the queue, invoke ourselves again..
     if (!m_clientSocket->atEnd())
         QMetaObject::invokeMethod(this, "read", Qt::QueuedConnection);
-
-    reloadQml();
+    else if (!m_pendingReload) {
+        QMetaObject::invokeMethod(this, "reloadQml", Qt::QueuedConnection);
+        m_pendingReload = true;
+    }
 }
 
 void DQmlServer::reloadQml()
 {
+    m_pendingReload = false;
     qCDebug(DQML_LOG) << "reloading...";
     delete m_contentItem;
     m_contentItem = 0;
@@ -150,10 +154,19 @@ void DQmlServer::reloadQml()
     QQmlComponent *component = new QQmlComponent(m_engine);
     QUrl fileUrl = QUrl::fromLocalFile(m_file);
     component->loadUrl(fileUrl);
+    qCDebug(DQML_LOG) << "loaded url..";
 
     if (!component->isReady()) {
         qWarning() << component->errorString();
         return;
+    }
+
+    QPoint winPos(-1, -1);
+    QSize winSize(-1, -1);
+
+    if (m_view) {
+        winPos = m_view->position();
+        winSize = m_view->size();
     }
 
     m_contentItem = component->create();
@@ -166,22 +179,22 @@ void DQmlServer::reloadQml()
         }
     } else {
         QQuickItem *item = qobject_cast<QQuickItem *>(m_contentItem);
-        QSize size(320, 480);
-        if (item && item->width() > 0 && item->height() > 0)
-            size = QSize(item->width(), item->height());
+        if (item && item->width() > 0 && item->height() > 0 && winSize.width() < 0 && winSize.height() < 0)
+            winSize = QSize(item->width(), item->height());
         if (!m_view && m_createViewIfNeeded) {
             m_view = new QQuickView();
             m_view->setResizeMode(QQuickView::SizeRootObjectToView);
             m_ownsView = true;
+            m_view->show();
             qCDebug(DQML_LOG) << "created a view to hold the QML";
         }
         if (m_view) {
-
             m_view->setContent(fileUrl, component, m_contentItem);
-            if (m_ownsView) {
-                m_view->resize(size);
-                m_view->show();
-            }
+            if (winPos.x() >= 0 && winPos.y() >= 0)
+                m_view->setPosition(winPos);
+            if (winSize.width() > 0 && winSize.height() > 0)
+                m_view->resize(winSize);
+            m_view->show();
         }
         else
             qCDebug(DQML_LOG) << "no view to show qml, set 'setCreatesViewIfNeeded(true)' or supply one.";

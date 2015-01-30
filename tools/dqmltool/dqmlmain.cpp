@@ -62,7 +62,7 @@ void printHelp()
            "                server.\n"
            "\n"
            "    --server    The application runs in server mode with 'file.qml' as the main qml\n"
-           "                file. The --server moe is followed by the port to accept connections\n"
+           "                file. The --server mode is followed by the port to accept connections\n"
            "                on.\n"
            "\n"
            "Options:\n"
