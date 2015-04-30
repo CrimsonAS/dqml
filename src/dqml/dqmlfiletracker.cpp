@@ -34,6 +34,7 @@ DQmlFileTracker::DQmlFileTracker(QObject *parent) :
     QObject(parent)
 {
     connect(&m_watcher, SIGNAL(directoryChanged(QString)), this, SLOT(onDirChange(QString)));
+    connect(&m_watcher, SIGNAL(fileChanged(QString)), this, SLOT(onFileChange(QString)));
 
     m_suffixes << QStringLiteral("qml");
     m_suffixes << QStringLiteral("js");
@@ -126,16 +127,30 @@ void DQmlFileTracker::onDirChange(const QString &path)
         } else if (is) {
             // File is there now, but wasn't before -> added..
             qCDebug(DQML_LOG) << " - added:" << id << p;
+#ifdef Q_OS_LINUX
+            m_watcher.addPath(QFileInfo(path + "/" + p).canonicalFilePath());
+#endif
             emit fileAdded(id, path, p);
         } else if (was) {
             // file was there, but isn't anymore -> removed
             qCDebug(DQML_LOG) << " - removed:" << id << p;
+#ifdef Q_OS_LINUX
+            // Need to use absoluteFilePath here as the file is gone and
+            // canonicalFilePath() will return a null string.
+            m_watcher.removePath(QFileInfo(path + "/" + p).absoluteFilePath());
+#endif
             emit fileRemoved(id, path, p);
         }
     }
 
     // use the new content set from now on..
     entry.content = currentContent;
+}
+
+void DQmlFileTracker::onFileChange(const QString &path)
+{
+    QFileInfo info(path);
+    onDirChange(info.canonicalPath());
 }
 
 DQmlFileTracker::Entry DQmlFileTracker::createEntry(const QFileInfo &info)
@@ -153,6 +168,9 @@ DQmlFileTracker::Entry DQmlFileTracker::createEntry(const QFileInfo &info)
             quint64 time = i.lastModified().toMSecsSinceEpoch();
             qCDebug(DQML_LOG) << " - tracking file" << name << time;
             e.content[name] = time;
+#ifdef Q_OS_LINUX
+            m_watcher.addPath(i.canonicalFilePath());
+#endif
         } else {
             qCDebug(DQML_LOG) << " - ignoring" << i.fileName();
         }

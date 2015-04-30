@@ -60,6 +60,7 @@ signals:
 
 private slots:
     void onDirChange(const QString &);
+    void onFileChange(const QString &);
 
 private:
     Entry createEntry(const QFileInfo &info);
