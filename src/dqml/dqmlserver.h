@@ -51,11 +51,11 @@ public:
 
     void addTrackerMapping(const QString &id, const QString &path) { m_trackerMapping.insert(id, path); }
 
-public slots:
+public Q_SLOTS:
     void listen(quint16 port);
     void reloadQml();
 
-private slots:
+private Q_SLOTS:
     void newConnection();
     void acceptError(QAbstractSocket::SocketError error);
 

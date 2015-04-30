@@ -49,11 +49,11 @@ public:
     DQmlFileTracker *fileTracker() { return m_tracker; }
     void setSyncAllFilesWhenConnected(bool sync) { m_syncAll = sync; }
 
-public slots:
+public Q_SLOTS:
     void connectToServer(const QString &host, quint16 port);
     void syncAllFiles();
 
-private slots:
+private Q_SLOTS:
     void socketConnected();
     void socketDisconnected();
     void socketError(QAbstractSocket::SocketError error);

@@ -53,12 +53,12 @@ public:
     bool track(const QString &id, const QString &path);
     bool untrack(const QString &id);
 
-signals:
+Q_SIGNALS:
     void fileChanged(const QString &id, const QString &path, const QString &fileName);
     void fileAdded(const QString &id, const QString &path, const QString &fileName);
     void fileRemoved(const QString &id, const QString &path, const QString &fileName);
 
-private slots:
+private Q_SLOTS:
     void onDirChange(const QString &);
     void onFileChange(const QString &);
 
