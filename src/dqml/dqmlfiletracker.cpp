@@ -128,7 +128,7 @@ void DQmlFileTracker::onDirChange(const QString &path)
             // File is there now, but wasn't before -> added..
             qCDebug(DQML_LOG) << " - added:" << id << p;
 #ifdef Q_OS_LINUX
-            m_watcher.addPath(QFileInfo(path + "/" + p).canonicalFilePath());
+            m_watcher.addPath(QFileInfo(path + QStringLiteral("/") + p).canonicalFilePath());
 #endif
             emit fileAdded(id, path, p);
         } else if (was) {
@@ -137,7 +137,7 @@ void DQmlFileTracker::onDirChange(const QString &path)
 #ifdef Q_OS_LINUX
             // Need to use absoluteFilePath here as the file is gone and
             // canonicalFilePath() will return a null string.
-            m_watcher.removePath(QFileInfo(path + "/" + p).absoluteFilePath());
+            m_watcher.removePath(QFileInfo(path + QStringLiteral("/") + p).absoluteFilePath());
 #endif
             emit fileRemoved(id, path, p);
         }

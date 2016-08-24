@@ -46,7 +46,7 @@ public:
         QHash<QString, quint64> content;
     };
 
-    explicit DQmlFileTracker(QObject *parent = 0);
+    explicit DQmlFileTracker(QObject *parent = Q_NULLPTR);
 
     QHash<QString, Entry> trackingSet() const;
 
